@@ -1,5 +1,6 @@
 package ua.kpi.its.lab.rest.svc.impl
 
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import ua.kpi.its.lab.rest.dto.CinemaRequestDto
 import ua.kpi.its.lab.rest.dto.CinemaResponseDto
@@ -13,18 +14,18 @@ class CinemaServiceImpl(
     private val cinemaRepository: CinemaRepository
 ) : CinemaService {
 
-
+    @PreAuthorize("hasRole('EDITOR')")
     override fun createCinema(cinemaRequest: CinemaRequestDto): CinemaResponseDto {
         val cinemas = Cinema (name = cinemaRequest.name, address = cinemaRequest.address, openingDate = LocalDate.EPOCH, seatCount = cinemaRequest.seatCount, screenCount = cinemaRequest.screenCount, soundTechnology = cinemaRequest.soundTechnology, is3D = cinemaRequest.is3D)
         val savedCinemas = cinemaRepository.save(cinemas)
         return CinemaResponseDto.fromEntity(savedCinemas)
     }
-
+    @PreAuthorize("hasAnyRole('EDITOR', 'VIEWER')")
     override fun getCinemaById(id: Long): CinemaResponseDto {
         val cinemas = cinemaRepository.findById(id).orElseThrow()
         return CinemaResponseDto.fromEntity(cinemas)
     }
-
+    @PreAuthorize("hasRole('EDITOR')")
     override fun updateCinema(id: Long, cinemaRequest: CinemaRequestDto): CinemaResponseDto {
         val cinemas = cinemaRepository.findById(id).orElseThrow()
         cinemas.name = cinemaRequest.name
@@ -32,7 +33,7 @@ class CinemaServiceImpl(
         val updateCinemas = cinemaRepository.save(cinemas)
         return CinemaResponseDto.fromEntity(updateCinemas)
     }
-
+    @PreAuthorize("hasRole('EDITOR')")
     override fun deleteCinema(id: Long): Boolean {
         return if (cinemaRepository.existsById(id)) {
             cinemaRepository.deleteById(id)
